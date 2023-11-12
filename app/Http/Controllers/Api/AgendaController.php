@@ -47,7 +47,7 @@ class AgendaController extends Controller
 
     public function store(Request $request) {
         $validator = Validator::make($request->all(), [
-            'time' => 'required|date',
+            'time' => 'required',
             'name' => 'required',
             'attendant_count' => 'required|numeric',
             'pic' => 'required'
