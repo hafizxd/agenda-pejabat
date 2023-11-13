@@ -50,7 +50,8 @@ class AgendaController extends Controller
             'time' => 'required',
             'name' => 'required',
             'attendant_count' => 'required|numeric',
-            'pic' => 'required'
+            'pic' => 'required',
+            'note' => 'nullable'
         ]);
 
         if ($validator->fails()) {
@@ -89,8 +90,67 @@ class AgendaController extends Controller
             'attendant_count' => $request->attendant_count,
             'pic' => $request->pic,
             'room_id' => $request->room_id,
-            'custom_room_name' => $request->custom_room_name
+            'custom_room_name' => $request->custom_room_name,
+            'note' => $request->note
         ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Success',
+            'payload' => $agenda
+        ]);
+    }
+
+    public function update($id, Request $request) {
+        $validator = Validator::make($request->all(), [
+            'time' => 'required',
+            'name' => 'required',
+            'attendant_count' => 'required|numeric',
+            'pic' => 'required',
+            'note' => 'nullable'
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Validation fails.',
+                'payload' => [
+                    'errors' => $validator->errors()
+                ]
+            ], 422);
+        }
+
+        if (isset($request->room_id)) {
+            // validate room id
+            $room = Room::find($request->room_id);
+            if (!isset($room)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Room not found.',
+                    'payload' => []
+                ], 422);
+            }
+        } else {
+            if (!isset($request->custom_room_name)) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Isikan nama ruangan jika tidak memilih ruangan dalam agenda',
+                    'payload' => []
+                ], 422);
+            }
+        }
+
+        $agenda = Agenda::findOrFail($id)->update([
+            'time' => $request->time,
+            'name' => $request->name,
+            'attendant_count' => $request->attendant_count,
+            'pic' => $request->pic,
+            'room_id' => $request->room_id,
+            'custom_room_name' => $request->custom_room_name,
+            'note' => $request->note
+        ]);
+        
+        $agenda = Agenda::findOrFail($id);
 
         return response()->json([
             'success' => true,
